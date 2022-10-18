@@ -183,7 +183,7 @@ jobs:
       - run:
           name: Add backend ip to ansible inventory file
           command: |
-            bash url.sh ${CIRCLE_WORKFLOW_ID:0:7}
+            bash .circleci/url.sh ${CIRCLE_WORKFLOW_ID:0:7}
             echo $?
             cat .circleci/ansible/inventory.txt
           
