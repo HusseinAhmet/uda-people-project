@@ -188,6 +188,7 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
             echo "$BACKEND_AWS_PUBLIC_IP" >> .circleci/ansible/inventory.txt
+            cat ~/project/.circleci/ansible/inventory.txt
 
 
             
