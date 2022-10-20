@@ -26,7 +26,7 @@ commands:
       parameters:
         Workflow_ID:
           type: string
-          default: ${CIRCLE_WORKFLOW_ID:0:7}
+          default: udacityproj33
       steps:
         - run:
             name: Destroy environments
@@ -165,8 +165,8 @@ jobs:
               --template-file .circleci/files/backend.yml \
               --tags project=udapeople \
               --region us-east-1 \
-              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+              --stack-name "udapeople-backend-udacityproj33" \
+              --parameter-overrides ID="udacityproj33"
       - run:
           name: Ensure frontend infrastructure exist
           command: |
@@ -174,8 +174,8 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --tags project=udapeople \
               --region us-east-1 \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
+              --stack-name "udapeople-frontend-udacityproj33" \
+              --parameter-overrides ID="udacityproj33"
 
               
 
@@ -183,7 +183,7 @@ jobs:
       - run:
           name: Add backend ip to ansible inventory file
           command: |
-            bash ~/project/.circleci/url.sh ${CIRCLE_WORKFLOW_ID:0:7}
+            aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-udacityproj33" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> ~/project/.circleci/ansible/inventory.txt
             cat ~/project/.circleci/ansible/inventory.txt
 
             

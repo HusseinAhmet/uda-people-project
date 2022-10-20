@@ -31,13 +31,11 @@ Resources:
       InstanceType: t2.micro
       SecurityGroups:
         - Ref: InstanceSecurityGroup
-      KeyName: udacity3
+      KeyName: udacityproject3
       ImageId: ami-0149b2da6ceec4bb0
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}
-        - Key: Project
-          Value: Udapeople
 
   InstanceEIP:
     Type: AWS::EC2::EIP
