@@ -35,7 +35,7 @@ Resources:
       ImageId: ami-0149b2da6ceec4bb0
       Tags:
         - Key: Name
-          Value: !Sub backend-${ID}
+          Values: !Sub backend-${ID}
 
   InstanceEIP:
     Type: AWS::EC2::EIP
