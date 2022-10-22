@@ -203,8 +203,9 @@ jobs:
       - checkout
       - install_ansible
       - install_aws
-      -  add_ssh_fingerprint:
-          fingerprints: ["ba:d1:19:1c:c7:e2:b2:ec:ae:e2:1a:7b:f8:5a:c1:d9"]
+      - add_ssh_fingerprint:
+          fingerprints:
+            - "ba:d1:19:1c:c7:e2:b2:ec:ae:e2:1a:7b:f8:5a:c1:d9"
       - attach_workspace:
           at: ~/
       - run:
