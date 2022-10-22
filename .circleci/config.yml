@@ -196,24 +196,24 @@ jobs:
             
       - destroy-environment  
 
-#  # configure-infrastructure:
-#     docker:
-#       # Docker image here that supports Ansible
-#     steps:
-#       # Checkout code from git
-#       # Add ssh keys with fingerprint
-#       # attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # Your code here
-#             exit 1
-#       - run:
-#           name: Configure server
-#           command: |
-#             # Your code here
-#             exit 1
-#       # Here's where you will add some code to rollback on failure      
+  configure-infrastructure:
+    docker: 
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_ansible
+      - install_aws
+      -  add_ssh_fingerprint:
+          fingerprints: ["ba:d1:19:1c:c7:e2:b2:ec:ae:e2:1a:7b:f8:5a:c1:d9"]
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Configuring Backend ec2 server using Ansible 
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+
+      - destroy-environment    
 
 # #  run-migrations:
 #     docker:
@@ -346,8 +346,8 @@ workflows:
           filters:
             branches:
               only: [main]
-      # - configure-infrastructure:
-      #     requires: [deploy-infrastructure]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
       # - run-migrations:
       #     requires: [configure-infrastructure]
       # - deploy-frontend:
