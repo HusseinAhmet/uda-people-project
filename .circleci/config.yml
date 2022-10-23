@@ -21,7 +21,16 @@ commands:
               sudo apt install software-properties-common -y
               sudo apt install python3-pip
               python3 -m pip install --user ansible
-
+    install_nodejs:
+      description: Installing Nodejs 13.8.0
+      steps:
+        - run:
+            name: Installing Nodejs 13.8.0
+            command: |  
+              curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+              sudo apt install -y nodejs
+              sudo npm install --global n
+              sudo n 13.8.0
     destroy-environment:
       description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
       parameters:
@@ -240,43 +249,76 @@ jobs:
             fi
       - destroy-environment
       - revert-migrations
-  # deploy-frontend:
-  #   docker:
-  #     - image: cimg/aws:2022.09.1
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           # your code here
-  #     - run:
-  #         name: Get backend url
-  #         command: |
-  #           ${BACKEND_IP} =  $(aws ec2 describe-instances --region us-east-1 --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} " --query 'Reservations[*].Instances[*].PublicIpAddress' --output text )
-  #           export API_URL="http://${BACKEND_IP}:3030"
-  #           echo "${API_URL}"
-  #     - run:
-  #         name: Deploy frontend objects
-  #         command: |
-  #           # your code here
-  #     # Here's where you will add some code to rollback on failure      
+  deploy-frontend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_nodejs
+      - install_aws
+      - install_ansible
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
+          name: Install dependencies
+          command: |
+            cd frontend
+            npm install
+      - run:
+          name: Get backend url
+          command: |
+            BACKEND_IP =  $(aws ec2 describe-instances --region us-east-1 --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} " --query 'Reservations[*].Instances[*].PublicIpAddress' --output text )
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm run build
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - destroy-environment
+      - revert-migrations
                     
-#   deploy-backend:
-#     docker:
-#       # Docker image here that supports Ansible
-#     steps:
-#       # Checkout code from git
-#       # Add ssh keys with fingerprint
-#       # attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Deploy backend
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure  
+  deploy-backend:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_ansible
+      - install_nodejs
+      - install_aws
+      - add_ssh_keys:
+          fingerprints:
+            - "ba:d1:19:1c:c7:e2:b2:ec:ae:e2:1a:7b:f8:5a:c1:d9"
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Install dependencies
+          command: |
+            cd backend
+            npm install
+      - run:
+          name: Packaging backend dist folder
+          command: |
+            cd backend
+            npm run build
+            tar -czf artifact.tar.gz dist/* package*
+            cd ..
+            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+      - run:
+          name: Deploy backend
+          command: |
+            export TYPEORM_MIGRATIONS_DIR=./migrations
+            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*.ts
+            cd .circleci/ansible
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      - destroy-environment
+      - revert-migrations
 
 # ##  smoke-test:
 #     docker:
@@ -358,10 +400,10 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-      # - deploy-frontend:
-      #     requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:

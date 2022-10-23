@@ -1,0 +1,20 @@
+---
+- name: "make directory for backend "
+  file:
+    path: ~/Backend-Application
+    state: directory
+
+- name: "Unarchive Backend tar files"
+  unarchive:
+    src: artifact.tar.gz
+    dest: ~/Backend-Application
+
+- name: "installing app dependencies"
+  shell: |
+    cd ~/Backend-Application
+    npm i
+- name: "run node app with PM2"
+  shell: |
+    cd ~/Backend-Application/dist
+    pm2 stop default
+    pm2 start main.js
