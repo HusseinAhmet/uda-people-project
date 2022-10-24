@@ -321,7 +321,7 @@ jobs:
 
   smoke-test:
     docker:
-      - image: alpine
+      - image: cimg/base:stable
     steps:
       - checkout
       - install_aws
