@@ -370,7 +370,7 @@ jobs:
                       --region us-east-1 \
                       --no-paginate --output text)
             echo "Old Wokflow ID: $OLD_WORKFLOW_ID"
-            curl https://kvdb.io/${KVDB_Bucket_ID}/old_workflow_id1 -d "${OLD_WORKFLOW_ID}"
+            curl https://kvdb.io/${KVDB_Bucket_ID}/old_workflow_id-${OLD_WORKFLOW_ID} -d "${OLD_WORKFLOW_ID}"
       - run:      
           name: Update cloudfront distribution
           command: |
