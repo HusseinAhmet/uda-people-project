@@ -370,7 +370,7 @@ jobs:
                       --region us-east-1 \
                       --no-paginate --output text)
             echo "Old Wokflow ID: $OLD_WORKFLOW_ID"
-            curl https://kvdb.io/${KVDB_Bucket_ID}/old_workflow_id_4 -d "${OLD_WORKFLOW_ID}"
+            curl https://kvdb.io/${KVDB_Bucket_ID}/old_workflow_id_5 -d "${OLD_WORKFLOW_ID}"
       - run:      
           name: Update cloudfront distribution
           command: |
@@ -397,7 +397,7 @@ jobs:
                 --query "StackSummaries[*].StackName" \
                 --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
             echo Stack names: "${STACKS[@]}"
-            export OldWorkflowID=$(curl --insecure https://kvdb.io/${KVDB_Bucket_ID}/old_workflow_id_4)
+            export OldWorkflowID=$(curl --insecure https://kvdb.io/${KVDB_Bucket_ID}/old_workflow_id_5)
             echo Old Workflow ID: $OldWorkflowID 
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
